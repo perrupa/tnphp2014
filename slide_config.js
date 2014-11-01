@@ -2,7 +2,7 @@ var SLIDE_CONFIG = {
   // Slide settings
   settings: {
     title: 'For PHP devs with mixed<br>feelings about JavaScript',
-    subtitle: '... and how to feel good about it',
+    subtitle: 'Understand it. Integrate it.',
     useBuilds: true, // Default: true. False will turn off slide animation builds.
     usePrettify: true, // Default: true
     enableSlideAreas: true, // Default: true. False turns off the click areas on either slide of the slides.

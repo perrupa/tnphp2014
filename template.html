@@ -511,7 +511,139 @@ boundGetXMethod() // “exclusive to bound method”
     </hgroup>
   </slide>
 
+  <slide>
+    <hgroup>
+      <h2>Sending JS from PHP</h2>
+      <h3>The crappy dynamic code genration way</h3>
+    </hgroup>
+    <article>
+      <p>A list where items build:</p>
+      <pre class="prettyprint" data-lang="javascript">
+&lt;?php $someArray = $_POST; ?&gt;
+<b>&lt;script type='text/javascript'&gt;</b>
+  &lt;?php
+    foreach ($someArray as $value) {
+      echo '<b>$.("</b>' . <b>$value</b>  . '<b>").fadeIn()</b>'; // FIXME: Introduces XSS exploit
+    }
+  ?&gt;
+<b>&lt;/script&gt;</b>
+</pre>
+      <p>Exhibit A: The arcitectual antipattern equivilant of using eval.</p>
+    </article>
+  </slide>
 
+  <slide>
+    <hgroup>
+      <h2>Sending JS from PHP</h2>
+      <h3>Passing a configuration to a fixed program</h3>
+    </hgroup>
+    <article>
+      <p>A list where items build:</p>
+      <pre class="prettyprint" data-lang="javascript">
+&lt;?php $someArray = $_POST; ?&gt;
+<b>&lt;script type='text/javascript'&gt;</b>
+    // Expose a configuration set, seperated from the app.
+    var items = &lt;?php echo json_encode($someArray); ?&gt;;
+
+    // Expose your app (external &lt;script&gt; files are even better)
+    _.each(items, function(item) {
+      $(item).fadeIn();
+    });
+<b>&lt;/script&gt;</b>
+</pre>
+    </article>
+    <p>Treat your JS apps like they are vendors.</p>
+  </slide>
+
+  <slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>Practical application</h2>
+      <h3>Integrating AngularJS with my PHP app</h3>
+      <ul>
+        <li>Project includes non-PHP devs</li>
+        <li>Can prototype it before we knew about how it would be connected</li>
+        <li>Allows modular parts of a larger system</li>
+      </ul>
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>JS is just another vendor</h2>
+    </hgroup>
+    <article class="smaller">
+      <p>composer.json+lock</p>
+      <ul>
+        <li>Verson locks</li>
+        <li>
+      <pre class="prettyprint" data-lang="json">
+require: {
+    "namespaced/php-package-name": "v1.0.0"
+}
+</pre>
+</li>
+      </ul>
+      <p>package.json</p>
+      <ul>
+        <li>Verson locks</li>
+        <li>
+      <pre class="prettyprint" data-lang="json">
+dependencies: {
+    "namespaced-package-name": "git+ssh://git.example.com/namespaced/package-name#v1.1.1"
+}
+</pre>
+</li>
+      </ul>
+       <p>You could use just composer if you wanted to. I find that this improves seperation of concerns.</p>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>JS is just another vendor</h2>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="twig">
+&lt;body ng-apps="namespacedApp"&gt;
+  &lt;ng-view&gt;&lt;/ng-view&gt;
+  &lt;script src="{{ assets_common('js/app.js', 'namespacedapp') }}"&gt;&lt;/script&gt;
+  &lt;script&gt;&lt;/ng-script&gt;
+    angular.module('namespacedApp').run(['$rootScope', function($rootScope){
+      $rootScope.configuration = {{ variableWithJsonPassedFromController }};
+    }]);
+&lt;/body&gt;
+</pre>
+    <p>Application updates only need to worry about data changes, not templates and states everywhere</p>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Try to avoid vendor duplication</h2>
+    </hgroup>
+    <article>
+      <ul class="build">
+        <li>Usually contextual to what you're doing. I don't know of any silver bullet.</li>
+        <li>Bootstrap and jQuery are vendors. Try to use just one, and source them from just one place <b>at build time</b>.</li>
+        <li>CDNs are great</li>
+        <li>You can always make your own assets CDN</li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>Practical application</h2>
+      <h3>Change a polling API to a NodeJS Websocket connection</h3>
+      <ul>
+        <li>Flash app spoke in binary serialized objects to "Zend AMF"</li>
+        <li>Hard to change quickly, hook into things, extend.</li>
+        <li>Hard to offer a good standalone mode option</li>
+      </ul>
+    </hgroup>
+  </slide>
 
   <slide>
     <hgroup>
