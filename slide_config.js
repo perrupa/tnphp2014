@@ -2,7 +2,7 @@ var SLIDE_CONFIG = {
   // Slide settings
   settings: {
     title: 'For PHP devs with mixed<br>feelings about JavaScript',
-    subtitle: 'Subtitle Goes Here',
+    subtitle: '... and how to feel good about it',
     useBuilds: true, // Default: true. False will turn off slide animation builds.
     usePrettify: true, // Default: true
     enableSlideAreas: true, // Default: true. False turns off the click areas on either slide of the slides.
@@ -19,10 +19,8 @@ var SLIDE_CONFIG = {
   // Author information
   presenters: [{
     name: 'Brian Graham',
-    company: 'Developer<br>ExperiencePoint',
-    gplus: 'https://twitter.com/brianjgraham',
+    company: '',
     twitter: '@brianjgraham',
-    www: 'https://twitter.com/brianjgraham',
     github: 'http://github.com/incognito'
   }]
 };

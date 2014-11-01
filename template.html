@@ -16,7 +16,7 @@
 
   <slide class="logoslide nobackground">
     <article class="flexbox vcenter">
-      <span><img src="images/google_developers_logo.png"></span>
+      <span><img src="images/true_north_logo.png"></span>
     </article>
   </slide>
 
@@ -30,23 +30,488 @@
     </hgroup>
   </slide>
 
+  <slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>Part one</h2>
+      <h3>JavaScript is not PHP</h3>
+    </hgroup>
+  </slide>
+
   <slide>
     <hgroup>
-      <h2>Slide with Bullets</h2>
+      <h2>Change how you think about JavaScript</h2>
+      <h3>Don't abuse JS, use JS.</h3>
     </hgroup>
     <article>
-      <ul>
-        <li>Titles are formatted as Open Sans with bold applied and font size is set at 45</li>
-        <li>Title capitalization is title case
-          <ul>
-            <li>Subtitle capitalization is title case</li>
-          </ul>
-        </li>
-        <li>Subtitle capitalization is title case</li>
-        <li>Titles and subtitles should never have a period at the end</li>
+      <p>Applications, not content:</p>
+      <ul class="build">
+        <li>Serve application configuration, not content.</li>
+        <li>JS is not a glorified HTML template</li>
+      </ul>
+      <p>Another world:</p>
+      <ul class="build">
+        <li>Prototypes are not classes.</li>
+        <li>Objects, arrays, and syntax are not identical</li>
+        <li>Multiple versions of JS interpreters</li>
+      </ul>
+      <p>Passing data:</p>
+      <ul class="build">
+        <li>This in JS is not This in PHP</li>
+        <li>Functions are not scary</li>
       </ul>
     </article>
   </slide>
+
+  <slide>
+    <hgroup>
+      <h2>{} != []</h2>
+      <h3>Key language differences and gotchas.</h3>
+    </hgroup>
+    <article>
+      <ul class="build">
+          <li>Objects in JS do not have order</li>
+          <li>PHP's new Array() is an ordered map, not an array!</li>
+          <li>Iterating over objects in JS requires a saftey guard</li>
+          <li>JavaScript requires you use var, PHP will fail if you use var.</li>
+          <li>In JavaScript there is no object arrow operator.
+          <pre class="prettyprint" data-lang="javascript">
+            &lt;script type='text/javascript'&gt;
+                var foo = {bar: 'baz'};
+                foo.baz === foo['baz']; // true
+            &lt;/script&gt;
+        </pre>
+        </li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Functions are just data</h2>
+    </hgroup>
+    <article>
+      <pre class="prettyprint" data-lang="javascript">
+        &lt;script type='text/javascript'&gt;
+            var foo = function() {
+                <b>return new Error();</b>
+            }
+
+            foo();
+        &lt;/script&gt;
+      </pre>
+      <ul class="build">
+          <li>Argh! Stack trace says this came from "Anonymous function" instead of function "foo" !</li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Good practice: name your functions</h2>
+      <h3>Do what you do in PHP: name them after what they do</h3>
+    </hgroup>
+    <article>
+      <pre class="prettyprint" data-lang="javascript">
+        &lt;script type='text/javascript'&gt;
+            var foo = function <b>returnsAnError</b>() {
+                <b>return new Error();</b>
+            }
+            
+            foo(); // same as calling returnsAnError()
+        &lt;/script&gt;
+      </pre>
+      <ul class="build">
+          <li>Stack trace says this came from "returnsAnError function"</li>
+          <li>Self-documenting</li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Get a new instance</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="javascript">
+            var KlassWrapper = (function returnsTheClass() {
+                var Klass = function <b>theConstructor()</b> { // Functions are objects
+                };
+
+                return Klass;
+            }());
+
+            var inst = <b>new KlassWrapper()</b>; // new Instance from Klass object
+      </pre>
+      <pre class="prettyprint" data-lang="php">
+            class Klass
+            {
+                public <b>__construct()</b> {
+                }
+            }
+
+            $inst = new Klass(); // new Instance from Klass class
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Properties</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="javascript">
+        var Klass = (function returnsTheClass() {
+            var Klass = function theConstructor(val) {
+                <b>this.propy = val;</b>
+            };
+            return Klass;
+        }());
+
+        var inst = new Klass();
+        inst.propy; // Klass doesn’t know about propy.
+      </pre>
+      <pre class="prettyprint" data-lang="php">
+        class Klass
+        {
+            public propy;
+            public __construct(val) {
+                <b>this->propy=val;</b>
+            }
+        }
+
+        $inst = new Klass();
+        $inst->propy; // Klass knows about a variable container called propy,
+                      // but the value belongs to instance.
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects the wrong way</h2>
+      <h3 class="red">This code only demonstrates a common mistake, don't do this.</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="javascript">
+var Klass = (function returnsTheClass() {
+    var Klass = function theConstructor(val) {
+        this._propy = val; // Not actually enforced private
+    };
+
+    <b>// THIS DOES NOT WORK
+    Klass.getPropy = function publicGetPropy() {
+        return this._propy; // ‘this’ variable is not looking at your instance.
+    }</b>
+
+    return Klass;
+}());
+var inst = <b>new Klass()</b>;
+<b>inst.getPropy(); // getPropy is a method on a different object.</b>
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects the wrong way</h2>
+      <h3 class="red">This broken code demonstrates what that mistake might look like in PHP.</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="php">
+class Klass
+{
+    private propy;
+
+    public __construct(val) {
+        <b>this->propy=val;</b>
+    }
+
+    <b>// This is bad idea, do not do
+    public static getPropy() {
+        return this->propy;
+    }</b>
+}
+
+$inst = <b>new Klass();
+$Klass->getPropy; // getPropy is clearly not going to return what you want</b>
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>What's a prototype</h2>
+      <h3>If properties are for instances, prototypes are for...?</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="javascript">
+var Klass = function() {
+    <b>this.instanceVal = '1';</b>
+};
+Klass.<b>prototype</b>.getInVal = function() { return <b>this.instanceVal</b>; }
+Klass.notAProtoMethod = function() { return this; }
+
+<b>// Values of things in comments</b>
+Klass;                        <b>// function () { this.instanceVal = '1'}</b>
+Klass.notAProtoMethod;        <b>// function () { return this }</b>
+Klass.notAProtoMethod();      <b>// function () { this.instanceVal = '1'}</b>
+
+new Klass();                  <b>// Klass {instanceVal: "1", getInVal: function }</b>
+new Klass().notAProtoMethod;  <b>// undefined</b>
+new Klass().getInVal          <b>// function () { return this.instanceVal; }</b>
+new Klass().getInVal()        <b>// "1"</b>
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Class methods, not instance methods</h3>
+    </hgroup>
+    <article>
+      <pre class="prettyprint" data-lang="php">
+class Klass
+{
+    private propy;
+
+    public __construct(val) {
+        <b>this->propy=val;</b>
+    }
+
+    <b>public getPropy() {
+        return this->propy;
+    }</b>
+}
+
+$inst = new Klass();
+$inst->getPropy;
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Prototypes</h3>
+    </hgroup>
+    <article>
+      <pre class="prettyprint" data-lang="javascript">
+var Klass = (function () {
+    var Klass = function (val) {
+        this._propy = val;
+    };
+
+    <b>Klass.prototype.getPropy = function () {</b>
+        return this._propy;
+    }
+
+    return Klass;
+}());
+
+var inst = new Klass(1);
+inst.getPropy(); // returns 1
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Private</h3>
+    </hgroup>
+    <article>
+      <pre class="prettyprint" data-lang="php">
+class Klass
+{
+    private propy;
+    public __construct(val) {
+        this->propy= $this->randy();
+    }
+
+    <b>private randy () {
+        return rand();
+    }</b>
+}
+
+$inst = new Klass();
+// Propy is private
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Private</h3>
+    </hgroup>
+    <article>
+      <pre class="prettyprint" data-lang="javascript">
+var Klass = (function Wrap() {
+    var Klass = function (val) {
+        this._propy = randy();
+    };
+
+    <b>// Only things inside the scope of Wrap can call randy
+    var randy = function () {
+        return Math.random();
+    }</b>
+
+    return Klass;
+}());
+
+var inst = new Klass(1);
+<b>inst._propy; // It’s up to you to not call _propy;
+             // some people try to write libs just for that</b>
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Static as an object</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="javascript">
+var Klass = (function Wrap() {
+    var Klass = {
+        <b>‘propy’: ‘whatever’</b>
+    };
+    Klass.foo = function (){
+        <b>return Klass.propy;</b>
+    }
+    return Klass;
+}());
+Klass.propy; // <b>Sorry, you can edit this if you're not careful.</b>
+Klass.foo();
+      </pre>
+      <pre class="prettyprint" data-lang="php">
+class Klass
+{
+    <b>const propy = ‘whatever’;</b>
+    static public function foo() {
+        </b>return self::propy;</b>
+    }
+}
+
+Klass->propy;
+Klass->foo();
+      </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>'this' keyword</h2>
+    </hgroup>
+    <article>
+        <p>PHP<p>
+        <ul class="build">
+          <li>Reference to object's instance</li>
+        </ul>
+        <br>
+        <br>
+        <p>JavaScript<p>
+        <ul class="build">
+          <li>This is not what you think it is</li>
+          <li>Mutable references to context of an object</li>
+          <li>This will confuse you</li>
+        </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>'this' keyword</h2>
+      <h3>Think about the scope it is used in, not about the "class".</h3>
+    </hgroup>
+    <article>
+          <pre class="prettyprint" data-lang="javascript">
+    &lt;script type='text/javascript'&gt;
+        this.awhSnapYo = “I’m everywhere”;
+        awhSnapYo === this.awhSnapYo === window.awhSnapYo // true
+    &lt;/script&gt;
+          </pre>
+          <p>Oops, you've attached to the global scope</p>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>'this' keyword</h2>
+      <h3>Think about the scope it is used in, not about the "class".</h3>
+    </hgroup>
+    <article>
+          <pre class="prettyprint" data-lang="javascript">
+    &lt;script type='text/javascript'&gt;
+        ({
+            x: “I only exist here”,
+            getX: function() {
+                return this.x; // 'getX' is part of the { object }
+            }
+        }).getX() // "I only exist here" 
+    &lt;/script&gt;
+          </pre>
+          <p> 'this' is set to the object the method is called on </p>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>'this' keyword</h2>
+      <h3>Good practice: use strict mode</h3>
+    </hgroup>
+    <article>
+          <pre class="prettyprint" data-lang="javascript">
+        function f1(){
+            return this;
+        }
+        f1() === window; // global object
+          </pre>
+          <pre class="prettyprint" data-lang="javascript">
+        function f2(){
+            "use strict"; // tells ES5 engine to use strict mode
+            return this; // strict mode prevents access of window via ‘this’
+        }
+        f2() === undefined; // true
+          </pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>'this' keyword</h2>
+      <h3>Can be changed whenever you want</h3>
+    </hgroup>
+    <article>
+          <pre class="prettyprint" data-lang="javascript">
+var previousObject = {
+   x: “I only exist here”,
+   getX: function() {return this.x;}
+};
+
+var boundGetXMethod = previousObject.getX.bind(
+    {x: “exclusive to bound method”}
+); // This does not execute the method
+
+boundGetXMethod() // “exclusive to bound method”
+          </pre>
+    </article>
+  </slide>
+
+  <slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>Part 2</h2>
+      <h3>How to cleanly put JavaScript inside PHP</h3>
+    </hgroup>
+  </slide>
+
+
 
   <slide>
     <hgroup>
@@ -367,7 +832,7 @@ function helloWorld(world) {
     <aside class="gdbar right"><img src="images/google_developers_icon_128.png"></aside>
     <article class="flexbox vleft auto-fadein">
       <h2>&lt;Thank You!&gt;</h2>
-      <p>Important contact information goes here.</p>
+      <p>Slides are on my github!</p>
     </article>
     <p class="auto-fadein" data-config-contact>
       <!-- populated from slide_config.json -->
