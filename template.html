@@ -645,8 +645,171 @@ dependencies: {
     </hgroup>
   </slide>
 
+  <slide>
+    <hgroup>
+      <h2>PHP to JS. JS to Flash.</h2>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="twig">
+    var <b>applicationInterface</b> = new AppInterface({
+        apiInterface: new apiInterface(),
+        flashElement: '{{ swfId }}'
+        topic: new Topic('someSubscriptionTopic', '{{ url('sf2_endpoint') }}'),
+        debug: {{ app.debug ? 'true' : 'false '}},
+        initializationValues: {{ initializationValues }}
+    });
 
+    swfobject.embedSWF( // Third party flash loading library
+        '{{ asset_flash('app.swf') }}',
+        '{{ swfId }}',
+        ...,
+        {
+          jsPublishEndpoint: function calledWhenFlashPushesData(data) {
+            <b>applicationInterface</b>.publish(data)
+          }
+        }
+    );
+</pre>
+    <p>All we do here is define a configuration set. We don't write any control-flow logic (that ternary doesn't count).</p>
+    <p>JS is configured with an API endpoint. Flash gets a method it talks to in the JS app. Flash and PHP no longer have logic coupled together.</p>
+    </article>
 
+    <aside class="note"><section>  
+Can change API contract in the JS with same flash build<br>
+Flash devs don’t need to run a webserver<br>
+Debugging capabilities enhanced<br>
+    <section></aside class="note">  
+  </slide>
+
+  <slide class="segue dark nobackground">
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    <hgroup class="auto-fadein">
+      <h2>Refactor polling to websockets!</h2>
+      <br>
+      <ul>
+        <li>Apache doesn't do it</li>
+        <li>The PHP WAMP server's load kept crashing the server</li>
+        <li>"Why aren't we just using socket.io?"</li>
+      </ul>
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Changing code from XHR polling to Websockets.</h2>
+      <h3>Key commits.</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="" data-lang="git log">
+7242a48  Changes polling code into websocket queue code.
+f5e62b7  Removes XHR things.
+ae78d08  Adds socket.io client
+39bc101  added authentication for nodejs incoming connection
+</pre>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Adding Node.js: Authentication</h2>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="Symfony2">
+class AuthenticationListener implements EventSubscriberInterface
+{
+    // ...
+    public function saveAuthentication(FilterResponseEvent $event)
+    {
+        if (!$session = $event->getRequest()->attributes->get('session')) {
+            return;
+        }
+
+        $this->redisClient->set(
+            sprintf(
+                self::$KEY_AUTHENTICATION,
+                $event->getRequest()->getSession()->getId()
+            ),
+            json_encode(
+                [
+                    'isAuthenticated' => // ... Some stuff :)
+                    'sessionId'       => //  ... Some stuff :)
+                ]
+            ),
+            ['EX' => self::$TTL]
+        );
+    }
+}
+
+</pre>
+    </article>
+
+    <aside class="note"><section>  
+Can change API contract in the JS with same flash build<br>
+Flash devs don’t need to run a webserver<br>
+Debugging capabilities enhanced<br>
+    <section></aside class="note">  
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Adding Node.js: Push data</h2>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="Symfony2">
+class QueuePusher {
+    protected static $KEY_QUEUE = 'queue_name';
+    protected $queueClient;
+
+    public function __construct($queueClient) { ... }
+
+    public function notify($data) {
+        $this->queueClient->publish(
+            self::$KEY_QUEUE, json_encode($data)
+        );
+    }
+}
+</pre>
+    <p>Node side I just subscribe to messages. <a href="http://gonzalo123.com/2013/12/24/integrating-websockets-with-php-applications-silex-and-socket-io-playing-together/">This kind of thing has been done enough it's easy to search for.</a></p>
+    </article>
+
+    <aside class="note"><section>  
+    <section></aside class="note">  
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Adding Node.js: client-side</h2>
+    </hgroup>
+    <article class="smaller">
+<p>Before...</p>
+      <pre class="prettyprint" data-lang="JavaScript">
+XHRTransport.prototype.connect = function(topic) {
+   var self=this;
+
+   this._request('GET', topic).then(
+      function onFulfilled(response) {
+          if (response.status !== 304) {
+              topic.eTag = response.eTag;
+              topic.executeCallback.bind(topic)(message);
+          }
+      });
+};
+</pre>
+<p>After...</p>
+      <pre class="prettyprint" data-lang="JavaScript">
+SocketTransport.prototype.connect = function(topic) {
+   var socket = this._socket;
+   
+   socket.on(topic.client, function(){
+      topic.executeCallback.bind(topic)(message);
+   });
+};
+</pre>
+    </article>
+
+    <aside class="note"><section>  
+    <section></aside class="note">  
+  </slide>
 
 
 
@@ -658,16 +821,33 @@ dependencies: {
 
   <slide>
     <hgroup>
-      <h2>Slide with Iframe</h2>
+      <h2>More ways to level up!</h2>
     </hgroup>
-    <article>
-      <iframe data-src="http://www.google.com/doodle4google/resources/history.html"></iframe>
-    </article>
-  </slide>
-
-  <slide>
-    <article>
-      <iframe data-src="http://www.google.com/doodle4google/resources/history.html"></iframe>
+    <article class="smaller">
+      <div class="columns-2">
+      <ul>
+        <li><a href="http://www.slideshare.net/stoyan/javascript-for-php-developers-7245314">Presentation which does a side-by-side language difference
+        <li><a href="https://github.com/airbnb/javascript">JavaScript style guide (closest thing I can find to something like PHP-FIG PSRs)</a>
+        <li><a href="http://www.jshint.com/">Static analysis (find problems before you run the code)</a>
+        <li><a href="http://www.phpweekly.com/archive/latest.html">Weekly PHP newsletter email</a>
+        <li><a href="http://javascriptweekly.com/">Weekly JS newsletter email</a>
+        <li><a href="https://developer.chrome.com/devtools/docs/videos">Chrome Developer tools video tutorials</a>
+        <li><a href="http://stackoverflow.com/questions/748175/asynchronous-vs-synchronous-execution-what-does-it-really-mean\">Difference between Async and Sync code</a>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Details_of_the_Object_Model?redirectlocale=en-US&redirectslug=Core_JavaScript_1.5_Guide%2FDetails_of_the_Object_Model">JavaScript object model</a>
+        <li><a href="http://javascript.info/tutorial/inheritance#crossbrowser-object-create-proto">JavaScript prototypes</a>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this">JavaScript this keyword</a>
+        <li><a href="http://underscorejs.org/">Underscore.js</a> and <a href="http://lodash.com/">Lodash.js</a>
+        <li><a href="http://modernweb.com/2014/10/15/javascript-architecture-23rd-century/">JS Architecture</a>
+        <li><a href="http://www.html5rocks.com/en/tutorials/es6/promises/">Promises</a>
+      </ul>
+      </div>
+      <p>Also some non-free stuff, but there's a discount code they said I could give out</p>
+      <ul>
+        <li><a href="">JavaScript Patterns </a>
+        <li><a href="">The good parts</a>
+        <li><a href="">You Don’t Know JS</a>
+        <li>Discount code:  <b>TS2014</b> - 50% off online, 40% physical.
+      </ul>
     </article>
   </slide>
 
