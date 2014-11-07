@@ -54,9 +54,6 @@
         <li>Prototypes are not classes.</li>
         <li>Objects, arrays, and syntax are not identical</li>
         <li>Multiple versions of JS interpreters</li>
-      </ul>
-      <p>Passing data:</p>
-      <ul class="build">
         <li>This in JS is not This in PHP</li>
         <li>Functions are not scary</li>
       </ul>
@@ -71,14 +68,14 @@
     <article>
       <ul class="build">
           <li>Objects in JS do not have order</li>
-          <li>PHP's new Array() is an ordered map, not an array!</li>
-          <li>Iterating over objects in JS requires a saftey guard</li>
+          <li>PHP's <b>array()</b> is an ordered map, not an array!</li>
+          <li>Iterating over objects in JS requires a safety guard</li>
           <li>JavaScript requires you use var, PHP will fail if you use var.</li>
           <li>In JavaScript there is no object arrow operator.
           <pre class="prettyprint" data-lang="javascript">
-            &lt;script type='text/javascript'&gt;
+            &lt;script&gt;
                 var foo = {bar: 'baz'};
-                foo.baz === foo['baz']; // true
+                foo.bar === foo['bar']; // true
             &lt;/script&gt;
         </pre>
         </li>
@@ -92,7 +89,7 @@
     </hgroup>
     <article>
       <pre class="prettyprint" data-lang="javascript">
-        &lt;script type='text/javascript'&gt;
+        &lt;script&gt;
             var foo = function() {
                 <b>return new Error();</b>
             }
@@ -113,7 +110,7 @@
     </hgroup>
     <article>
       <pre class="prettyprint" data-lang="javascript">
-        &lt;script type='text/javascript'&gt;
+        &lt;script&gt;
             var foo = function <b>returnsAnError</b>() {
                 <b>return new Error();</b>
             }
@@ -134,6 +131,15 @@
       <h3>Get a new instance</h3>
     </hgroup>
     <article class="smaller">
+      <pre class="prettyprint" data-lang="php">
+            class Klass
+            {
+                public <b>__construct()</b> {
+                }
+            }
+
+            $inst = new Klass(); // new Instance from Klass class
+      </pre>
       <pre class="prettyprint" data-lang="javascript">
             var KlassWrapper = (function returnsTheClass() {
                 var Klass = function <b>theConstructor()</b> { // Functions are objects
@@ -144,15 +150,6 @@
 
             var inst = <b>new KlassWrapper()</b>; // new Instance from Klass object
       </pre>
-      <pre class="prettyprint" data-lang="php">
-            class Klass
-            {
-                public <b>__construct()</b> {
-                }
-            }
-
-            $inst = new Klass(); // new Instance from Klass class
-      </pre>
     </article>
   </slide>
 
@@ -162,6 +159,19 @@
       <h3>Properties</h3>
     </hgroup>
     <article class="smaller">
+      <pre class="prettyprint" data-lang="php">
+        class Klass
+        {
+            public $propy;
+            public __construct($val) {
+                <b>$this->propy=$val;</b>
+            }
+        }
+
+        $inst = new Klass();
+        $inst->propy; // Klass knows about a variable container called propy,
+                      // but the value belongs to instance.
+      </pre>
       <pre class="prettyprint" data-lang="javascript">
         var Klass = (function returnsTheClass() {
             var Klass = function theConstructor(val) {
@@ -173,18 +183,39 @@
         var inst = new Klass();
         inst.propy; // Klass doesn’t know about propy.
       </pre>
-      <pre class="prettyprint" data-lang="php">
-        class Klass
-        {
-            public propy;
-            public __construct(val) {
-                <b>this->propy=val;</b>
-            }
-        }
+    </article>
+  </slide>
 
-        $inst = new Klass();
-        $inst->propy; // Klass knows about a variable container called propy,
-                      // but the value belongs to instance.
+  <slide>
+    <hgroup>
+      <h2>Classless objects</h2>
+      <h3>Static as an object</h3>
+    </hgroup>
+    <article class="smaller">
+      <pre class="prettyprint" data-lang="php">
+class Klass
+{
+    <b>const propy = ‘whatever’;</b>
+    static public function foo() {
+        </b>return self::propy;</b>
+    }
+}
+
+Klass::propy;
+Klass::foo();
+      </pre>
+      <pre class="prettyprint" data-lang="javascript">
+var Klass = (function Wrap() {
+    var Klass = {
+        <b>‘propy’: ‘whatever’</b>
+    };
+    Klass.foo = function (){
+        <b>return Klass.propy;</b>
+    }
+    return Klass;
+}());
+Klass.propy; // <b>Sorry, you can edit this if you're not careful.</b>
+Klass.foo();
       </pre>
     </article>
   </slide>
@@ -197,6 +228,9 @@
     <article class="smaller">
       <pre class="prettyprint" data-lang="javascript">
 var Klass = (function returnsTheClass() {
+    function Klass theConstructor(val) {
+    // Remember, that's an alias for var Klass = function Klass theConstructor(val) {...
+
     var Klass = function theConstructor(val) {
         this._propy = val; // Not actually enforced private
     };
@@ -236,7 +270,7 @@ class Klass
 }
 
 $inst = <b>new Klass();
-$Klass->getPropy; // getPropy is clearly not going to return what you want</b>
+$Klass->getPropy(); // getPropy is clearly not going to return what you want</b>
       </pre>
     </article>
   </slide>
@@ -248,8 +282,8 @@ $Klass->getPropy; // getPropy is clearly not going to return what you want</b>
     </hgroup>
     <article class="smaller">
       <pre class="prettyprint" data-lang="javascript">
-var Klass = function() {
-    <b>this.instanceVal = '1';</b>
+var Klass = function() {    // Remember, functions ARE objects
+    <b>this.instanceVal = '1';</b> // They accept properties
 };
 Klass.<b>prototype</b>.getInVal = function() { return <b>this.instanceVal</b>; }
 Klass.notAProtoMethod = function() { return this; }
@@ -372,40 +406,6 @@ var inst = new Klass(1);
 
   <slide>
     <hgroup>
-      <h2>Classless objects</h2>
-      <h3>Static as an object</h3>
-    </hgroup>
-    <article class="smaller">
-      <pre class="prettyprint" data-lang="javascript">
-var Klass = (function Wrap() {
-    var Klass = {
-        <b>‘propy’: ‘whatever’</b>
-    };
-    Klass.foo = function (){
-        <b>return Klass.propy;</b>
-    }
-    return Klass;
-}());
-Klass.propy; // <b>Sorry, you can edit this if you're not careful.</b>
-Klass.foo();
-      </pre>
-      <pre class="prettyprint" data-lang="php">
-class Klass
-{
-    <b>const propy = ‘whatever’;</b>
-    static public function foo() {
-        </b>return self::propy;</b>
-    }
-}
-
-Klass->propy;
-Klass->foo();
-      </pre>
-    </article>
-  </slide>
-
-  <slide>
-    <hgroup>
       <h2>'this' keyword</h2>
     </hgroup>
     <article>
@@ -431,7 +431,7 @@ Klass->foo();
     </hgroup>
     <article>
           <pre class="prettyprint" data-lang="javascript">
-    &lt;script type='text/javascript'&gt;
+    &lt;script&gt;
         this.awhSnapYo = “I’m everywhere”;
         awhSnapYo === this.awhSnapYo === window.awhSnapYo // true
     &lt;/script&gt;
@@ -447,7 +447,7 @@ Klass->foo();
     </hgroup>
     <article>
           <pre class="prettyprint" data-lang="javascript">
-    &lt;script type='text/javascript'&gt;
+    &lt;script&gt;
         ({
             x: “I only exist here”,
             getX: function() {
@@ -488,7 +488,9 @@ Klass->foo();
       <h3>Can be changed whenever you want</h3>
     </hgroup>
     <article>
-          <pre class="prettyprint" data-lang="javascript">
+        <p>Don't be scared, those { } braces create object literals. They aren't for scope resolution.</p>
+        <pre class="prettyprint" data-lang="javascript">
+var x = “I wont exist inside the following object”;
 var previousObject = {
    x: “I only exist here”,
    getX: function() {return this.x;}
@@ -499,7 +501,7 @@ var boundGetXMethod = previousObject.getX.bind(
 ); // This does not execute the method
 
 boundGetXMethod() // “exclusive to bound method”
-          </pre>
+        </pre>
     </article>
   </slide>
 
@@ -514,21 +516,29 @@ boundGetXMethod() // “exclusive to bound method”
   <slide>
     <hgroup>
       <h2>Sending JS from PHP</h2>
-      <h3>The crappy dynamic code genration way</h3>
+      <h3>The crappy dynamic code generation way</h3>
     </hgroup>
-    <article>
+    <article class="smaller">
       <p>A list where items build:</p>
       <pre class="prettyprint" data-lang="javascript">
 &lt;?php $someArray = $_POST; ?&gt;
-<b>&lt;script type='text/javascript'&gt;</b>
+<b>&lt;script&gt;</b>
   &lt;?php
     foreach ($someArray as $value) {
-      echo '<b>$.("</b>' . <b>$value</b>  . '<b>").fadeIn()</b>'; // FIXME: Introduces XSS exploit
+      echo '<b>$("</b>' . <b>$value</b>  . '<b>").fadeIn()</b>'; // FIXME: Introduces XSS exploit
     }
   ?&gt;
 <b>&lt;/script&gt;</b>
 </pre>
-      <p>Exhibit A: The arcitectual antipattern equivilant of using eval.</p>
+      <p>Exhibit A: The architectural antipattern equivalent of using eval:</p>
+      <pre>
+<b>&lt;script&gt;</b>
+$("<b>#foo</b>").fadeIn();
+$("<b>#bar</b>").fadeIn();
+$("<b>#baz</b>").fadeIn();
+$(""); <b>window.location="lol-credit-card-fraud-scam.org.biz.gov.uk.new.tld; //</b>").fadeIn();
+<b>&lt;/script&gt;</b>
+</pre>
     </article>
   </slide>
 
@@ -541,8 +551,8 @@ boundGetXMethod() // “exclusive to bound method”
       <p>A list where items build:</p>
       <pre class="prettyprint" data-lang="javascript">
 &lt;?php $someArray = $_POST; ?&gt;
-<b>&lt;script type='text/javascript'&gt;</b>
-    // Expose a configuration set, seperated from the app.
+<b>&lt;script&gt;</b>
+    // Expose a configuration set, separated from the app.
     var items = &lt;?php echo json_encode($someArray); ?&gt;;
 
     // Expose your app (external &lt;script&gt; files are even better)
@@ -562,7 +572,7 @@ boundGetXMethod() // “exclusive to bound method”
       <h3>Integrating AngularJS with my PHP app</h3>
       <ul>
         <li>Project includes non-PHP devs</li>
-        <li>Can prototype it before we knew about how it would be connected</li>
+        <li>Can prototype it before knowing about how it would be connected</li>
         <li>Allows modular parts of a larger system</li>
       </ul>
     </hgroup>
@@ -595,23 +605,28 @@ dependencies: {
 </pre>
 </li>
       </ul>
-       <p>You could use just composer if you wanted to. I find that this improves seperation of concerns.</p>
+       <p>You could use just composer if you wanted to. I find that this improves separation of concerns.</p>
     </article>
   </slide>
 
   <slide>
     <hgroup>
       <h2>JS is just another vendor</h2>
+      <h3>Here's how you can bootstrap an angular app from another repo</h3>
     </hgroup>
     <article class="smaller">
       <pre class="prettyprint" data-lang="twig">
 &lt;body ng-apps="namespacedApp"&gt;
   &lt;ng-view&gt;&lt;/ng-view&gt;
   &lt;script src="{{ assets_common('js/app.js', 'namespacedapp') }}"&gt;&lt;/script&gt;
-  &lt;script&gt;&lt;/ng-script&gt;
+  {# assets_common is a custom twig call that extends assetic, you could just drop in the path #}
+
+  &lt;script&gt;
     angular.module('namespacedApp').run(['$rootScope', function($rootScope){
-      $rootScope.configuration = {{ variableWithJsonPassedFromController }};
+      $rootScope.configuration = {{ variableWithJsonPassedFromController|raw }};
     }]);
+  &lt;/script&gt;
+
 &lt;/body&gt;
 </pre>
     <p>Application updates only need to worry about data changes, not templates and states everywhere</p>
@@ -638,9 +653,9 @@ dependencies: {
       <h2>Practical application</h2>
       <h3>Change a polling API to a NodeJS Websocket connection</h3>
       <ul>
-        <li>Flash app spoke in binary serialized objects to "Zend AMF"</li>
+        <li>Flash app spoke in binary serialized objects to "Zend AMF".</li>
         <li>Hard to change quickly, hook into things, extend.</li>
-        <li>Hard to offer a good standalone mode option</li>
+        <li>Hard to offer a good standalone mode option.</li>
       </ul>
     </hgroup>
   </slide>
@@ -665,13 +680,13 @@ dependencies: {
         ...,
         {
           jsPublishEndpoint: function calledWhenFlashPushesData(data) {
-            <b>applicationInterface</b>.publish(data)
+            <b>applicationInterface</b>.publish(data);
           }
         }
     );
 </pre>
-    <p>All we do here is define a configuration set. We don't write any control-flow logic (that ternary doesn't count).</p>
-    <p>JS is configured with an API endpoint. Flash gets a method it talks to in the JS app. Flash and PHP no longer have logic coupled together.</p>
+    <p>All we do here is define a configuration set.</p>
+    <p>JS gets an API endpoint. Flash can talk to JS, and it gets a JS function to call.</p>
     </article>
 
     <aside class="note"><section>  
@@ -689,7 +704,7 @@ Debugging capabilities enhanced<br>
       <ul>
         <li>Apache doesn't do it</li>
         <li>The PHP WAMP server's load kept crashing the server</li>
-        <li>"Why aren't we just using socket.io?"</li>
+        <li>"Why are we writing an event based webserver in PHP, instead of Node?"</li>
       </ul>
     </hgroup>
   </slide>
@@ -715,31 +730,30 @@ ae78d08  Adds socket.io client
     </hgroup>
     <article class="smaller">
       <pre class="prettyprint" data-lang="Symfony2">
-class AuthenticationListener implements EventSubscriberInterface
+class Authentication// ...
 {
     // ...
     public function saveAuthentication(FilterResponseEvent $event)
     {
-        if (!$session = $event->getRequest()->attributes->get('session')) {
-            return;
-        }
-
-        $this->redisClient->set(
-            sprintf(
-                self::$KEY_AUTHENTICATION,
-                $event->getRequest()->getSession()->getId()
-            ),
-            json_encode(
-                [
-                    'isAuthenticated' => // ... Some stuff :)
-                    'sessionId'       => //  ... Some stuff :)
-                ]
-            ),
-            ['EX' => self::$TTL]
-        );
-    }
-}
-
+        $this->redisClient->set($key, json_encode([
+           'isAuthenticated' => // ... 
+           'sessionId'       => //  ...
+        ])
+...
+</pre>
+<pre>
+                       +-----------+               Backend side 
+            +---------->  Redis    +----------+       
+            |          +-----------+          |       
+      +-----+--+                        +-----v-----+ 
+      |  SF2   |                        |  Node.JS  |    // Node.js Could send Private API calls to SF2
+      |        |                        |  Socket.io| 
+      +--^-+---+                        +----|------+ 
++--------|-|---+-----+---------------+--+----|-----------+
+         | |         +---------------+       |     Browser side   
+         | +--------->               <-------+        
+         +-+---------+  Browser      |                
+                     +---------------+                
 </pre>
     </article>
 
@@ -753,6 +767,8 @@ Debugging capabilities enhanced<br>
   <slide>
     <hgroup>
       <h2>Adding Node.js: Push data</h2>
+      <h3>Just a bridge between Node.js and PHP</h3>
+
     </hgroup>
     <article class="smaller">
       <pre class="prettyprint" data-lang="Symfony2">
@@ -788,8 +804,7 @@ XHRTransport.prototype.connect = function(topic) {
 
    this._request('GET', topic).then(
       function onFulfilled(response) {
-          if (response.status !== 304) {
-              topic.eTag = response.eTag;
+          if (response.status !== 304) { // because cache happens
               topic.executeCallback.bind(topic)(message);
           }
       });
@@ -810,14 +825,6 @@ SocketTransport.prototype.connect = function(topic) {
     <aside class="note"><section>  
     <section></aside class="note">  
   </slide>
-
-
-
-
-
-
-
-
 
   <slide>
     <hgroup>
