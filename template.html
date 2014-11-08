@@ -228,10 +228,10 @@ Klass.foo();
     <article class="smaller">
       <pre class="prettyprint" data-lang="javascript">
 var Klass = (function returnsTheClass() {
+
     function Klass theConstructor(val) {
     // Remember, that's an alias for var Klass = function Klass theConstructor(val) {...
 
-    var Klass = function theConstructor(val) {
         this._propy = val; // Not actually enforced private
     };
 
