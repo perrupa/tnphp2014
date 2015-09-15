@@ -800,8 +800,6 @@ class QueuePusher {
 <p>Before...</p>
       <pre class="prettyprint" data-lang="JavaScript">
 XHRTransport.prototype.connect = function(topic) {
-   var self=this;
-
    this._request('GET', topic).then(
       function onFulfilled(response) {
           if (response.status !== 304) { // because cache happens
